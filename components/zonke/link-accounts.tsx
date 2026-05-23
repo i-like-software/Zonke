@@ -18,6 +18,9 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(1);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
   const [credentials, setCredentials] = useState<Credentials>({});
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordId, setForgotPasswordId] = useState("");
 
   const toggleStore = (storeId: string) => {
     setSelectedStores(prev => 
