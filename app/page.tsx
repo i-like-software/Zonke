@@ -6,12 +6,18 @@ import { Dashboard } from "@/components/zonke/dashboard";
 import { LinkAccounts } from "@/components/zonke/link-accounts";
 import { Notifications } from "@/components/zonke/notifications";
 import { Insights } from "@/components/zonke/insights";
+import { AuthPage } from "@/components/zonke/Register";
 
 type Tab = "dashboard" | "link-accounts" | "notifications" | "insights";
 
 export default function ZonkePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  if (!isAuthenticated) {
+    return <AuthPage onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
 
   const handleLinkAccountsComplete = () => {
     setActiveTab("dashboard");
