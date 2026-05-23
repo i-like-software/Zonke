@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   Link2, 
@@ -7,7 +8,12 @@ import {
   TrendingUp,
   User,
   Menu,
-  X
+  X,
+  Settings,
+  Lock,
+  MoreVertical,
+  LogOut,
+  Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +34,8 @@ const navItems = [
 ];
 
 export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }: SidebarProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  
   return (
     <>
       {/* Mobile Header */}
@@ -89,16 +97,42 @@ export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }
         </nav>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-3 px-2">
+        <div className="p-4 border-t border-sidebar-border relative">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="w-full flex items-center gap-3 px-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
+          >
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-amber-600 flex items-center justify-center">
               <User className="w-5 h-5 text-primary-foreground" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 text-left">
               <p className="text-sm font-medium truncate">Thabo Molefe</p>
               <p className="text-xs text-muted-foreground truncate">thabo@email.co.za</p>
             </div>
-          </div>
+            <MoreVertical className="w-4 h-4 text-muted-foreground" />
+          </button>
+          
+          {/* Dropdown Menu */}
+          {menuOpen && (
+            <div className="absolute bottom-full left-4 right-4 mb-2 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-sidebar-accent transition-colors text-left">
+                <Settings className="w-4 h-4" />
+                Settings
+              </button>
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-sidebar-accent transition-colors text-left border-t border-border">
+                <Lock className="w-4 h-4" />
+                Privacy
+              </button>
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-sidebar-accent transition-colors text-left border-t border-border">
+                <LogOut className="w-4 h-4" />
+                Account Logout
+              </button>
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors text-left border-t border-border">
+                <Trash2 className="w-4 h-4" />
+                Account Deactivate/Delete
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 

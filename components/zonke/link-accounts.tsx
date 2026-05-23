@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Lock, ShieldCheck, ArrowRight, ArrowLeft } from "lucide-react";
+import { Check, Lock, ShieldCheck, ArrowRight, ArrowLeft, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const stores = [
@@ -43,7 +43,7 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
   );
 
   return (
-    <div className="max-w-2xl mx-auto animate-fade-in">
+    <div className="max-w-2xl mx-auto">
       {/* Progress Indicator */}
       <div className="flex items-center justify-center gap-2 mb-8">
         {[1, 2, 3].map((s) => (
@@ -70,7 +70,7 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
 
       {/* Step 1: Select Store Cards */}
       {step === 1 && (
-        <div className="animate-slide-up">
+        <div>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold font-[var(--font-heading)] mb-2">Select Your Store Cards</h1>
             <p className="text-muted-foreground">Choose the store cards you want to link to Zonke</p>
@@ -84,7 +84,7 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
                   key={store.id}
                   onClick={() => toggleStore(store.id)}
                   className={cn(
-                    "relative p-6 rounded-xl border-2 transition-all hover:scale-[1.02]",
+                    "relative p-6 rounded-xl border-2 transition-all",
                     isSelected 
                       ? "border-primary bg-primary/5" 
                       : "border-border hover:border-muted-foreground/50"
@@ -105,6 +105,30 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
                 </button>
               );
             })}
+            <button
+              className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
+            >
+              <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
+                <Plus className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <p className="font-semibold text-center">Add Card</p>
+            </button>
+            <button
+              className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
+            >
+              <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
+                <Plus className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <p className="font-semibold text-center">Add Card</p>
+            </button>
+            <button
+              className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
+            >
+              <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
+                <Plus className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <p className="font-semibold text-center">Add Card</p>
+            </button>
           </div>
 
           <button
@@ -125,7 +149,7 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
 
       {/* Step 2: Enter Credentials */}
       {step === 2 && (
-        <div className="animate-slide-up">
+        <div>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold font-[var(--font-heading)] mb-2">Enter Credentials</h1>
             <p className="text-muted-foreground">Securely link your store card accounts</p>
@@ -166,6 +190,9 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
                         placeholder="Enter your password"
                         className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                       />
+                      <button 
+                        onClick={() => setForgotPasswordOpen(true)}
+                        className="text-xs text-primary hover:underline mt-2">Forgot password?</button>
                     </div>
                   </div>
                 </div>
@@ -209,8 +236,8 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
 
       {/* Step 3: Success */}
       {step === 3 && (
-        <div className="text-center animate-slide-up">
-          <div className="w-24 h-24 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6 animate-scale-in">
+        <div className="text-center">
+          <div className="w-24 h-24 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
             <div className="w-16 h-16 rounded-full bg-success flex items-center justify-center">
               <Check className="w-8 h-8 text-white" />
             </div>
@@ -228,6 +255,68 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
             Go to Dashboard
             <ArrowRight className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Forgot Password Modal */}
+      {forgotPasswordOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg border border-border p-6 max-w-sm w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Reset Password</h2>
+              <button
+                onClick={() => setForgotPasswordOpen(false)}
+                className="p-1 hover:bg-muted rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-muted-foreground mb-6">Enter your email and ID to reset your password</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">ID / Card Number</label>
+                <input
+                  type="text"
+                  value={forgotPasswordId}
+                  onChange={(e) => setForgotPasswordId(e.target.value)}
+                  placeholder="Enter your ID or card number"
+                  className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setForgotPasswordOpen(false)}
+                className="flex-1 py-2.5 px-4 rounded-lg font-medium border border-border hover:bg-muted transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Handle password reset
+                  setForgotPasswordOpen(false);
+                  setForgotPasswordEmail("");
+                  setForgotPasswordId("");
+                }}
+                className="flex-1 py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all"
+              >
+                Reset Password
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
