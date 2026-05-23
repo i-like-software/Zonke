@@ -40,7 +40,7 @@ export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }
     <>
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-sidebar border-b border-sidebar-border z-50 flex items-center justify-between px-4">
-        <span className="text-xl font-bold text-primary font-[var(--font-heading)]">Zonke</span>
+        <span className="text-2xl font-extrabold text-primary font-[var(--font-heading)]">Zonke</span>
         <button 
           onClick={onMobileToggle}
           className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors"
@@ -65,7 +65,7 @@ export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }
       )}>
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
-          <span className="text-2xl font-bold text-primary font-[var(--font-heading)] tracking-tight">
+          <span className="text-3xl font-extrabold text-primary font-[var(--font-heading)] tracking-tight">
             Zonke
           </span>
         </div>
@@ -102,11 +102,11 @@ export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }
             onClick={() => setMenuOpen(!menuOpen)}
             className="w-full flex items-center gap-3 px-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-amber-600 flex items-center justify-center">
-              <User className="w-5 h-5 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold">
+              T
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-medium truncate">Thabo Molefe</p>
+              <p className="text-sm font-medium truncate">T</p>
               <p className="text-xs text-muted-foreground truncate">thabo@email.co.za</p>
             </div>
             <MoreVertical className="w-4 h-4 text-muted-foreground" />
