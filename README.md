@@ -41,10 +41,10 @@ Zonke ("all" in isiZulu) consolidates your South African retail store cards — 
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Run development server
-pnpm dev
+npm run dev
 
 # Build for production
 pnpm build
