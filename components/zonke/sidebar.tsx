@@ -46,18 +46,19 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Header */}
+      {/* ── Mobile top header ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-sidebar border-b border-sidebar-border z-50 flex items-center justify-between px-4">
         <span className="text-2xl font-extrabold text-primary font-[var(--font-heading)]">Zonke</span>
         <button
           onClick={onMobileToggle}
-          className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors"
+          className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground"
+          aria-label="Toggle menu"
         >
-          {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Mobile Overlay */}
+      {/* ── Mobile overlay ── */}
       {isMobileOpen && (
         <div
           className="md:hidden fixed inset-0 bg-black/50 z-40"
@@ -80,9 +81,29 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
           </span>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 py-6 px-3 space-y-1">
-          {navItems.map((item) => {
+        {/* ── Debt snapshot ── */}
+        <div className="mx-3 mt-4 rounded-xl p-3.5 border border-sidebar-border"
+          style={{ background: "oklch(0.23 0.03 265)" }}>
+          <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider mb-1">Total debt</p>
+          <p className="text-xl font-bold font-[var(--font-heading)]" style={{ color: "oklch(0.70 0.13 75)" }}>
+            {fmt(totalDebt)}
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            {overdueCount > 0 && (
+              <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400">
+                <AlertTriangle className="w-2.5 h-2.5" />
+                {overdueCount} overdue
+              </span>
+            )}
+            <span className="text-[10px] text-sidebar-foreground/50">
+              {unpaidCount} unpaid
+            </span>
+          </div>
+        </div>
+
+        {/* ── Nav ── */}
+        <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto mt-1">
+          {navItems.map(item => {
             const Icon = item.icon;
             return (
               <Link key={item.href} href={item.href} className={navLinkClass(item.href)}>
@@ -109,9 +130,9 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
         </div>
       </aside>
 
-      {/* Mobile Bottom Tab Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-sidebar border-t border-sidebar-border z-50 flex items-center justify-around px-2">
-        {navItems.map((item) => {
+      {/* ── Mobile bottom tab bar ── */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-sidebar border-t border-sidebar-border z-50 flex items-center justify-around px-1">
+        {navItems.map(item => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           return (
