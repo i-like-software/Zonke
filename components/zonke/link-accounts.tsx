@@ -13,8 +13,6 @@ type Store = {
   logoUrl?: string;
 };
 
-const router = useRouter();
-
 const stores: Store[] = [
   {
     id: "tfg",
@@ -77,7 +75,8 @@ const speakCardName = (cardName: string) => {
   window.speechSynthesis.speak(utterance);
 };
 
-export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
+export function LinkAccounts() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
   const [customStores, setCustomStores] = useState<Store[]>([]);
