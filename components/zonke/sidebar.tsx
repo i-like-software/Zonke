@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -11,10 +10,7 @@ import {
   Menu,
   X,
   Settings,
-  Lock,
-  MoreVertical,
   LogOut,
-  Trash2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -32,14 +28,21 @@ const navItems = [
 ];
 
 export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   const handleLogout = () => {
-    document.cookie = 'zonke_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    router.push('/login');
+    document.cookie = "zonke_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    router.push("/login");
   };
+
+  const navLinkClass = (href: string) =>
+    cn(
+      "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+      pathname === href
+        ? "bg-sidebar-accent text-primary border-l-2 border-primary"
+        : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
+    );
 
   return (
     <>
@@ -81,65 +84,28 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
         <nav className="flex-1 py-6 px-3 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-sidebar-accent text-primary border-l-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
-                )}
-              >
-                <Icon className={cn("w-5 h-5", isActive && "text-primary")} />
+              <Link key={item.href} href={item.href} className={navLinkClass(item.href)}>
+                <Icon className={cn("w-5 h-5", pathname === item.href && "text-primary")} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* User Profile */}
-        <div className="p-4 border-t border-sidebar-border relative">
+        {/* Bottom Actions */}
+        <div className="px-3 pb-6 border-t border-sidebar-border pt-4 space-y-1">
+          <Link href="/settings" className={navLinkClass("/settings")}>
+            <Settings className={cn("w-5 h-5", pathname === "/settings" && "text-primary")} />
+            Settings
+          </Link>
           <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="w-full flex items-center gap-3 px-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
           >
-            <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold">
-              T
-            </div>
-            <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-medium truncate">T</p>
-              <p className="text-xs text-muted-foreground truncate">thabo@email.co.za</p>
-            </div>
-            <MoreVertical className="w-4 h-4 text-muted-foreground" />
+            <LogOut className="w-5 h-5" />
+            Account Logout
           </button>
-
-          {/* Dropdown Menu */}
-          {menuOpen && (
-            <div className="absolute bottom-full left-4 right-4 mb-2 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-sidebar-accent transition-colors text-left">
-                <Settings className="w-4 h-4" />
-                Settings
-              </button>
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-sidebar-accent transition-colors text-left border-t border-border">
-                <Lock className="w-4 h-4" />
-                Privacy
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-sidebar-accent transition-colors text-left border-t border-border"
-              >
-                <LogOut className="w-4 h-4" />
-                Account Logout
-              </button>
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors text-left border-t border-border">
-                <Trash2 className="w-4 h-4" />
-                Account Deactivate/Delete
-              </button>
-            </div>
-          )}
         </div>
       </aside>
 
@@ -162,6 +128,16 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
             </Link>
           );
         })}
+        <Link
+          href="/settings"
+          className={cn(
+            "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
+            pathname === "/settings" ? "text-primary" : "text-muted-foreground"
+          )}
+        >
+          <Settings className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Settings</span>
+        </Link>
       </div>
     </>
   );
