@@ -18,7 +18,6 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: 'Zonke: Manage Your Store Cards',
   description: 'South African retail store-card aggregation dashboard. Manage all your retail credit accounts in one place.',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
