@@ -5,15 +5,13 @@ import { useRouter } from "next/navigation";
 import {
   CreditCard, Calendar, TrendingDown, Sparkles,
   ChevronDown, ChevronUp, Check, AlertCircle,
-  AlertTriangle, Plus, ExternalLink, Pencil,
-  Trash2, X, Wallet,
+  AlertTriangle, ExternalLink, Pencil,
+  Trash2, X,
 } from "lucide-react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
 } from "recharts";
-import {
-  Account, ACCOUNTS as DEFAULT_ACCOUNTS, STORE_COLORS, USER_PROFILE,
-} from "@/lab/mock-data";
+import { Account, USER_PROFILE, ACCOUNTS, STORE_COLORS } from "@/lab/mock-data";
 
 //helpers
 function fmt(n: number) {
@@ -257,17 +255,16 @@ export function Dashboard({
   const router = useRouter();
   const handleAutopilot = onNavigateToAutopilot ?? (() => router.push("/financial-autopilot"));
 
-  const [accounts, setAccounts]       = useState<Account[]>([]);
+  const [accounts, setAccounts]       = useState<Account[]>(ACCOUNTS);
+  const [username, setUsername]       = useState("");
   const [modal, setModal]             = useState(false);
   const [editing, setEditing]         = useState<Account | undefined>();
   const [tipExpanded, setTipExpanded] = useState(false);
-  const [chartReady, setChartReady]   = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("storeAccounts");
-      setAccounts(saved ? JSON.parse(saved) : DEFAULT_ACCOUNTS);
-    } catch { setAccounts(DEFAULT_ACCOUNTS); }
+    fetch("/api/user/accounts")
+      .then(r => r.json())
+      .then(({ username }) => setUsername(username));
   }, []);
 
   // Mount chart after a tick so Recharts fires the sweep animation
@@ -276,10 +273,7 @@ export function Dashboard({
     return () => clearTimeout(t);
   }, []);
 
-  const persist = (data: Account[]) => {
-    setAccounts(data);
-    localStorage.setItem("storeAccounts", JSON.stringify(data));
-  };
+  const persist = (data: Account[]) => { setAccounts(data); };
 
   const openAdd  = () => { setEditing(undefined); setModal(true); };
   const openEdit = (a: Account) => { setEditing(a); setModal(true); };
@@ -318,7 +312,7 @@ export function Dashboard({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-900 font-[var(--font-heading)]">
-            Hi, {USER_PROFILE.name}
+            Hi, {username || "there"}
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">Here's your store credit overview</p>
         </div>

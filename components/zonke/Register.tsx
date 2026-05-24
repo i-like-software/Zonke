@@ -73,8 +73,8 @@ export function AuthPage() {
       errs.cellphone = "Enter a valid SA cellphone number (e.g. 071 234 5678)";
     if (!registerForm.username.trim() || registerForm.username.length < 3)
       errs.username = "Username must be at least 3 characters";
-    if (PASSWORD_REQUIREMENTS.some((r) => !r.met(registerForm.password)))
-      errs.password = "Password does not meet all requirements";
+    if (registerForm.password.length < 6)
+      errs.password = "Password must be at least 6 characters";
     return errs;
   };
 
