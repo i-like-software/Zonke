@@ -127,7 +127,7 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
             >
               <Icon className="w-5 h-5" />
               <span className="text-[9px] font-medium text-center truncate max-w-full px-1">{item.label}</span>
-            </button>
+            </Link>
           );
         })}
         <Link

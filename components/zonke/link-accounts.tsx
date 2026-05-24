@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Check, Lock, ShieldCheck, ArrowRight, ArrowLeft, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,8 @@ type Store = {
   color: string;
   logoUrl?: string;
 };
+
+const router = useRouter();
 
 const stores: Store[] = [
   {
@@ -139,9 +141,9 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
     const store = allStores.find(s => s.id === storeId);
     setCardModalId(storeId);
     setCardModalOpen(true);
-    setTempCardName(cardInfo[storeId]?.name || store?.name || "");
-    setTempCardId(cardInfo[storeId]?.id || "");
-    setTempCardNumber(cardInfo[storeId]?.cardNumber || "");
+    //setTempCardName(cardInfo[storeId]?.name || store?.name || "");
+    //setTempCardId(cardInfo[storeId]?.id || "");
+    //setTempCardNumber(cardInfo[storeId]?.cardNumber || "");
   };
 
   const handleAddCard = () => {
