@@ -5,8 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Link2,
-  Bell,
-  TrendingUp,
+  Bot,
   Menu,
   X,
   Settings,
@@ -23,8 +22,7 @@ interface SidebarProps {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/link-accounts", label: "Link Accounts", icon: Link2 },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/insights", label: "Insights", icon: TrendingUp },
+  { href: "/financial-autopilot", label: "Financial Autopilot", icon: Bot },
 ];
 
 export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
@@ -79,26 +77,6 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
           <span className="text-3xl font-extrabold text-primary font-[var(--font-heading)] tracking-tight">
             Zonke
           </span>
-        </div>
-
-        {/* ── Debt snapshot ── */}
-        <div className="mx-3 mt-4 rounded-xl p-3.5 border border-sidebar-border"
-          style={{ background: "oklch(0.23 0.03 265)" }}>
-          <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider mb-1">Total debt</p>
-          <p className="text-xl font-bold font-[var(--font-heading)]" style={{ color: "oklch(0.70 0.13 75)" }}>
-            {fmt(totalDebt)}
-          </p>
-          <div className="flex items-center gap-2 mt-2">
-            {overdueCount > 0 && (
-              <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400">
-                <AlertTriangle className="w-2.5 h-2.5" />
-                {overdueCount} overdue
-              </span>
-            )}
-            <span className="text-[10px] text-sidebar-foreground/50">
-              {unpaidCount} unpaid
-            </span>
-          </div>
         </div>
 
         {/* ── Nav ── */}

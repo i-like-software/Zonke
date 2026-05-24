@@ -23,25 +23,12 @@ const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
 ];
 
 function validateSAId(id: string): boolean {
-  if (!/^\d{13}$/.test(id)) return false;
-  // Luhn algorithm check
-  let sum = 0;
-  for (let i = 0; i < 12; i++) {
-    const digit = parseInt(id[i]);
-    if (i % 2 === 0) {
-      sum += digit;
-    } else {
-      const doubled = digit * 2;
-      sum += doubled > 9 ? doubled - 9 : doubled;
-    }
-  }
-  const checkDigit = (10 - (sum % 10)) % 10;
-  return checkDigit === parseInt(id[12]);
+  return /^\d{13}$/.test(id);
 }
 
 function validateCellphone(phone: string): boolean {
-  const cleaned = phone.replace(/\s|-/g, "");
-  return /^(\+27|0)[6-8]\d{8}$/.test(cleaned);
+  const cleaned = phone.replace(/[\s\-]/g, "");
+  return /^\+?\d{10,13}$/.test(cleaned);
 }
 
 function getPasswordStrength(password: string): { score: number; label: string; color: string } {
@@ -100,11 +87,33 @@ export function AuthPage() {
     }
     setErrors({});
     setIsLoading(true);
-    // Simulate network call
-    await new Promise((r) => setTimeout(r, 900));
-    setIsLoading(false);
-    document.cookie = 'zonke_auth=1; path=/; SameSite=Strict';
-    router.push('/dashboard');
+
+    if (mode === "register") {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(registerForm),
+      });
+      setIsLoading(false);
+      if (!res.ok) {
+        const data = await res.json();
+        setErrors({ username: data.error ?? "Signup failed" });
+        return;
+      }
+      router.push("/link-accounts");
+    } else {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginForm),
+      });
+      setIsLoading(false);
+      if (!res.ok) {
+        setErrors({ password: "Invalid username or password" });
+        return;
+      }
+      router.push("/dashboard");
+    }
   };
 
   const switchMode = (next: Mode) => {

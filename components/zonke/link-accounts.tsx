@@ -13,26 +13,6 @@ type Store = {
   logoUrl?: string;
 };
 
-const stores: Store[] = [
-  {
-    id: "tfg",
-    name: "TFG",
-    color: "#3b82f6",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d0/TFG_Limited_Logo.svg/250px-TFG_Limited_Logo.svg.png",
-  },
-  {
-    id: "truworths",
-    name: "Truworths",
-    color: "#8b5cf6",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Truworths_Logo.jpg",
-  },
-  {
-    id: "ackermans",
-    name: "Ackermans",
-    color: "#14b8a6",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Ackermans_Logo.svg/250px-Ackermans_Logo.svg.png",
-  },
-];
 
 // Store Logo Components
 const StoreLogo = ({ store, size = "lg" }: { store: Store; size?: "sm" | "lg" }) => {
@@ -92,7 +72,13 @@ export function LinkAccounts() {
   const [tempCardId, setTempCardId] = useState("");
   const [tempCardNumber, setTempCardNumber] = useState("");
 
-  const allStores = useMemo(() => [...stores, ...customStores], [customStores]);
+  const [apiStores, setApiStores] = useState<Store[]>([]);
+
+  useEffect(() => {
+    fetch("/api/stores").then((r) => r.json()).then(setApiStores);
+  }, []);
+
+  const allStores = useMemo(() => [...apiStores, ...customStores], [apiStores, customStores]);
 
   useEffect(() => {
     const savedCardInfo = window.localStorage.getItem("zonke-card-info");
@@ -137,7 +123,6 @@ export function LinkAccounts() {
       return;
     }
 
-    const store = allStores.find(s => s.id === storeId);
     setCardModalId(storeId);
     setCardModalOpen(true);
     //setTempCardName(cardInfo[storeId]?.name || store?.name || "");
@@ -364,7 +349,14 @@ export function LinkAccounts() {
               Back
             </button>
             <button
-              onClick={() => setStep(3)}
+              onClick={async () => {
+                await fetch("/api/user/accounts", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ storeIds: selectedStores }),
+                });
+                setStep(3);
+              }}
               disabled={!canProceedStep2}
               className={cn(
                 "flex-1 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all",
