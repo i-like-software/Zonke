@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, Lock, ShieldCheck, ArrowRight, ArrowLeft, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,8 @@ interface Credentials {
   [key: string]: { username: string; password: string };
 }
 
-export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
+export function LinkAccounts() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
   const [credentials, setCredentials] = useState<Credentials>({});
@@ -252,7 +254,7 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
           </p>
 
           <button
-            onClick={onComplete}
+            onClick={() => router.push('/dashboard')}
             className="w-full py-3 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
           >
             Go to Dashboard

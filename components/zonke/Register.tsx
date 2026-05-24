@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, User, Phone, CreditCard, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-
-interface AuthProps {
-  onAuthenticated: () => void;
-}
 
 type Mode = "login" | "register";
 
@@ -56,7 +53,8 @@ function getPasswordStrength(password: string): { score: number; label: string; 
   return { score: met, label: "Very strong", color: "bg-primary" };
 }
 
-export function AuthPage({ onAuthenticated }: AuthProps) {
+export function AuthPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -105,7 +103,8 @@ export function AuthPage({ onAuthenticated }: AuthProps) {
     // Simulate network call
     await new Promise((r) => setTimeout(r, 900));
     setIsLoading(false);
-    onAuthenticated();
+    document.cookie = 'zonke_auth=1; path=/; SameSite=Strict';
+    router.push('/dashboard');
   };
 
   const switchMode = (next: Mode) => {
