@@ -2,34 +2,193 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { Check, Lock, ShieldCheck, ArrowRight, ArrowLeft, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const stores = [
-  { id: "tfg", name: "TFG", color: "#3b82f6" },
-  { id: "truworths", name: "Truworths", color: "#8b5cf6" },
-  { id: "ackermans", name: "Ackermans", color: "#14b8a6" },
+type Store = {
+  id: string;
+  name: string;
+  color: string;
+  logoUrl?: string;
+};
+
+const stores: Store[] = [
+  {
+    id: "tfg",
+    name: "TFG",
+    color: "#3b82f6",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d0/TFG_Limited_Logo.svg/250px-TFG_Limited_Logo.svg.png",
+  },
+  {
+    id: "truworths",
+    name: "Truworths",
+    color: "#8b5cf6",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Truworths_Logo.jpg",
+  },
+  {
+    id: "ackermans",
+    name: "Ackermans",
+    color: "#14b8a6",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Ackermans_Logo.svg/250px-Ackermans_Logo.svg.png",
+  },
 ];
+
+// Store Logo Components
+const StoreLogo = ({ store, size = "lg" }: { store: Store; size?: "sm" | "lg" }) => {
+  const sizeClass = size === "lg" ? "w-16 h-16" : "w-10 h-10";
+
+  if (store.logoUrl) {
+    return (
+      <div className={`${sizeClass} flex items-center justify-center rounded-xl bg-white p-2 shadow-sm`}>
+        <img
+          src={store.logoUrl}
+          alt={`${store.name} logo`}
+          className="max-h-full max-w-full object-contain"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${sizeClass} flex items-center justify-center font-bold text-white bg-indigo-500 rounded-xl`}>
+      {store.name.charAt(0)}
+    </div>
+  );
+};
 
 interface Credentials {
   [key: string]: { username: string; password: string };
 }
 
-export function LinkAccounts() {
-  const router = useRouter();
+interface CardInfo {
+  [key: string]: { name: string; id: string; cardNumber: string };
+}
+
+const speakCardName = (cardName: string) => {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(`You have added ${cardName} smart card`);
+  window.speechSynthesis.speak(utterance);
+};
+
+export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(1);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
+  const [customStores, setCustomStores] = useState<Store[]>([]);
   const [credentials, setCredentials] = useState<Credentials>({});
+  const [cardInfo, setCardInfo] = useState<CardInfo>({});
+  const [hasLoadedStoredData, setHasLoadedStoredData] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [forgotPasswordId, setForgotPasswordId] = useState("");
+  const [cardModalOpen, setCardModalOpen] = useState(false);
+  const [cardModalId, setCardModalId] = useState<string | null>(null);
+  const [tempCardName, setTempCardName] = useState("");
+  const [tempCardId, setTempCardId] = useState("");
+  const [tempCardNumber, setTempCardNumber] = useState("");
+
+  const allStores = useMemo(() => [...stores, ...customStores], [customStores]);
+
+  useEffect(() => {
+    const savedCardInfo = window.localStorage.getItem("zonke-card-info");
+    const savedCustomStores = window.localStorage.getItem("zonke-custom-stores");
+
+    try {
+      if (savedCardInfo) {
+        setCardInfo(JSON.parse(savedCardInfo));
+      }
+
+      if (savedCustomStores) {
+        setCustomStores(JSON.parse(savedCustomStores));
+      }
+    } finally {
+      setHasLoadedStoredData(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedStoredData) {
+      return;
+    }
+
+    window.localStorage.setItem("zonke-card-info", JSON.stringify(cardInfo));
+  }, [cardInfo, hasLoadedStoredData]);
+
+  useEffect(() => {
+    if (!hasLoadedStoredData) {
+      return;
+    }
+
+    window.localStorage.setItem("zonke-custom-stores", JSON.stringify(customStores));
+  }, [customStores, hasLoadedStoredData]);
 
   const toggleStore = (storeId: string) => {
-    setSelectedStores(prev => 
-      prev.includes(storeId) 
-        ? prev.filter(id => id !== storeId)
-        : [...prev, storeId]
-    );
+    if (cardInfo[storeId]) {
+      setSelectedStores(prev =>
+        prev.includes(storeId)
+          ? prev.filter(id => id !== storeId)
+          : [...prev, storeId]
+      );
+      return;
+    }
+
+    const store = allStores.find(s => s.id === storeId);
+    setCardModalId(storeId);
+    setCardModalOpen(true);
+    setTempCardName(cardInfo[storeId]?.name || store?.name || "");
+    setTempCardId(cardInfo[storeId]?.id || "");
+    setTempCardNumber(cardInfo[storeId]?.cardNumber || "");
+  };
+
+  const handleAddCard = () => {
+    setCardModalId("new-card");
+    setCardModalOpen(true);
+    setTempCardName("");
+    setTempCardId("");
+    setTempCardNumber("");
+  };
+
+  const handleCardModalConfirm = () => {
+    const cardName = tempCardName.trim();
+
+    if (!cardName || !tempCardId.trim() || !tempCardNumber.trim()) {
+      alert("Please fill in Card Name, ID, and Card Number");
+      return;
+    }
+
+    if (cardModalId === "new-card") {
+      // Generate a new store ID for custom card
+      const newStoreId = `custom-${Date.now()}`;
+      const newStore = { id: newStoreId, name: cardName, color: "#6366f1" };
+      setCustomStores(prev => [...prev, newStore]);
+      
+      setSelectedStores(prev => [...prev, newStoreId]);
+      setCardInfo(prev => ({
+        ...prev,
+        [newStoreId]: { name: cardName, id: tempCardId, cardNumber: tempCardNumber }
+      }));
+    } else if (cardModalId) {
+      setSelectedStores(prev => 
+        prev.includes(cardModalId) 
+          ? prev 
+          : [...prev, cardModalId]
+      );
+      setCardInfo(prev => ({
+        ...prev,
+        [cardModalId]: { name: cardName, id: tempCardId, cardNumber: tempCardNumber }
+      }));
+    }
+
+    speakCardName(cardName);
+    setCardModalOpen(false);
+    setCardModalId(null);
+    setTempCardName("");
+    setTempCardId("");
+    setTempCardNumber("");
   };
 
   const handleCredentialChange = (storeId: string, field: "username" | "password", value: string) => {
@@ -82,8 +241,9 @@ export function LinkAccounts() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            {stores.map((store) => {
+            {allStores.map((store) => {
               const isSelected = selectedStores.includes(store.id);
+              const hasCardInfo = cardInfo[store.id];
               return (
                 <button
                   key={store.id}
@@ -100,33 +260,18 @@ export function LinkAccounts() {
                       <Check className="w-4 h-4 text-primary-foreground" />
                     </div>
                   )}
-                  <div 
-                    className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold text-white mx-auto mb-4"
-                    style={{ backgroundColor: store.color }}
-                  >
-                    {store.name.charAt(0)}
+                  <div className="mx-auto mb-4 flex justify-center">
+                    <StoreLogo store={store} />
                   </div>
                   <p className="font-semibold text-center">{store.name}</p>
+                  {hasCardInfo && (
+                    <p className="text-xs text-muted-foreground text-center mt-2">Card: ••••{cardInfo[store.id].cardNumber.slice(-4)}</p>
+                  )}
                 </button>
               );
             })}
             <button
-              className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
-            >
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
-                <Plus className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <p className="font-semibold text-center">Add Card</p>
-            </button>
-            <button
-              className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
-            >
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
-                <Plus className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <p className="font-semibold text-center">Add Card</p>
-            </button>
-            <button
+              onClick={handleAddCard}
               className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
             >
               <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
@@ -162,16 +307,11 @@ export function LinkAccounts() {
 
           <div className="space-y-6 mb-6">
             {selectedStores.map((storeId) => {
-              const store = stores.find(s => s.id === storeId)!;
+              const store = allStores.find(s => s.id === storeId)!;
               return (
                 <div key={storeId} className="bg-card rounded-xl border border-border p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div 
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold text-white"
-                      style={{ backgroundColor: store.color }}
-                    >
-                      {store.name.charAt(0)}
-                    </div>
+                    <StoreLogo store={store} size="sm" />
                     <h3 className="font-semibold">{store.name}</h3>
                   </div>
                   
@@ -319,6 +459,87 @@ export function LinkAccounts() {
                 className="flex-1 py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all"
               >
                 Reset Password
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Card Info Modal */}
+      {cardModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg border border-border p-6 max-w-sm w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">
+                {cardModalId === "new-card" ? "Add New Card" : "Card Information"}
+              </h2>
+              <button
+                onClick={() => {
+                  setCardModalOpen(false);
+                  setCardModalId(null);
+                  setTempCardName("");
+                  setTempCardId("");
+                  setTempCardNumber("");
+                }}
+                className="p-1 hover:bg-muted rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-muted-foreground mb-6">Enter card name, ID, and card number</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">Card Name</label>
+                <input
+                  type="text"
+                  value={tempCardName}
+                  onChange={(e) => setTempCardName(e.target.value)}
+                  placeholder="e.g., TFG, Truworths, Ackermans"
+                  className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">ID Number</label>
+                <input
+                  type="text"
+                  value={tempCardId}
+                  onChange={(e) => setTempCardId(e.target.value)}
+                  placeholder="Enter your ID number"
+                  className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">Card Number</label>
+                <input
+                  type="text"
+                  value={tempCardNumber}
+                  onChange={(e) => setTempCardNumber(e.target.value)}
+                  placeholder="Enter your card number"
+                  className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setCardModalOpen(false);
+                  setCardModalId(null);
+                  setTempCardName("");
+                  setTempCardId("");
+                  setTempCardNumber("");
+                }}
+                className="flex-1 py-2.5 px-4 rounded-lg font-medium border border-border hover:bg-muted transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCardModalConfirm}
+                className="flex-1 py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all"
+              >
+                Confirm
               </button>
             </div>
           </div>

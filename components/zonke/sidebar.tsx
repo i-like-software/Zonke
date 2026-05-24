@@ -119,13 +119,15 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors flex-1 min-w-0",
+                isActive 
+                  ? "text-primary" 
+                  : "text-muted-foreground"
               )}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{item.label.split(" ")[0]}</span>
-            </Link>
+              <span className="text-[9px] font-medium text-center truncate max-w-full px-1">{item.label}</span>
+            </button>
           );
         })}
         <Link
