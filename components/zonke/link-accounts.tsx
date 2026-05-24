@@ -1,65 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, Lock, ShieldCheck, ArrowRight, ArrowLeft, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const stores = [
-  { id: "tfg", name: "TFG", color: "#3b82f6", logo: "tfg" },
-  { id: "truworths", name: "Truworths", color: "#8b5cf6", logo: "truworths" },
-  { id: "ackermans", name: "Ackermans", color: "#14b8a6", logo: "ackermans" },
+type Store = {
+  id: string;
+  name: string;
+  color: string;
+  logoUrl?: string;
+};
+
+const stores: Store[] = [
+  {
+    id: "tfg",
+    name: "TFG",
+    color: "#3b82f6",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d0/TFG_Limited_Logo.svg/250px-TFG_Limited_Logo.svg.png",
+  },
+  {
+    id: "truworths",
+    name: "Truworths",
+    color: "#8b5cf6",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Truworths_Logo.jpg",
+  },
+  {
+    id: "ackermans",
+    name: "Ackermans",
+    color: "#14b8a6",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Ackermans_Logo.svg/250px-Ackermans_Logo.svg.png",
+  },
 ];
 
 // Store Logo Components
-const StoreLogo = ({ storeId, size = "lg" }: { storeId: string; size?: "sm" | "lg" }) => {
+const StoreLogo = ({ store, size = "lg" }: { store: Store; size?: "sm" | "lg" }) => {
   const sizeClass = size === "lg" ? "w-16 h-16" : "w-10 h-10";
-  
-  if (storeId === "tfg") {
+
+  if (store.logoUrl) {
     return (
-      <div className={`${sizeClass} flex items-center justify-center font-bold text-white`}>
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <rect width="100" height="100" fill="#3b82f6" rx="8" />
-          <text x="50" y="65" fontSize="50" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial">
-            TFG
-          </text>
-        </svg>
-      </div>
-    );
-  } else if (storeId === "truworths") {
-    return (
-      <div className={`${sizeClass} flex items-center justify-center font-bold text-white`}>
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <rect width="100" height="100" fill="#8b5cf6" rx="8" />
-          <text x="50" y="60" fontSize="32" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial">
-            TW
-          </text>
-        </svg>
-      </div>
-    );
-  } else if (storeId === "ackermans") {
-    return (
-      <div className={`${sizeClass} flex items-center justify-center font-bold text-white`}>
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <rect width="100" height="100" fill="#14b8a6" rx="8" />
-          <text x="50" y="60" fontSize="32" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial">
-            ACK
-          </text>
-        </svg>
-      </div>
-    );
-  } else {
-    // Custom card logo
-    return (
-      <div className={`${sizeClass} flex items-center justify-center font-bold text-white bg-indigo-500 rounded-lg`}>
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <rect width="100" height="100" fill="#6366f1" rx="8" />
-          <text x="50" y="65" fontSize="40" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial">
-            C
-          </text>
-        </svg>
+      <div className={`${sizeClass} flex items-center justify-center rounded-xl bg-white p-2 shadow-sm`}>
+        <img
+          src={store.logoUrl}
+          alt={`${store.name} logo`}
+          className="max-h-full max-w-full object-contain"
+        />
       </div>
     );
   }
+
+  return (
+    <div className={`${sizeClass} flex items-center justify-center font-bold text-white bg-indigo-500 rounded-xl`}>
+      {store.name.charAt(0)}
+    </div>
+  );
 };
 
 interface Credentials {
@@ -70,11 +63,23 @@ interface CardInfo {
   [key: string]: { name: string; id: string; cardNumber: string };
 }
 
+const speakCardName = (cardName: string) => {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(`You have added ${cardName} smart card`);
+  window.speechSynthesis.speak(utterance);
+};
+
 export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(1);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
+  const [customStores, setCustomStores] = useState<Store[]>([]);
   const [credentials, setCredentials] = useState<Credentials>({});
   const [cardInfo, setCardInfo] = useState<CardInfo>({});
+  const [hasLoadedStoredData, setHasLoadedStoredData] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [forgotPasswordId, setForgotPasswordId] = useState("");
@@ -84,8 +89,52 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
   const [tempCardId, setTempCardId] = useState("");
   const [tempCardNumber, setTempCardNumber] = useState("");
 
+  const allStores = useMemo(() => [...stores, ...customStores], [customStores]);
+
+  useEffect(() => {
+    const savedCardInfo = window.localStorage.getItem("zonke-card-info");
+    const savedCustomStores = window.localStorage.getItem("zonke-custom-stores");
+
+    try {
+      if (savedCardInfo) {
+        setCardInfo(JSON.parse(savedCardInfo));
+      }
+
+      if (savedCustomStores) {
+        setCustomStores(JSON.parse(savedCustomStores));
+      }
+    } finally {
+      setHasLoadedStoredData(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedStoredData) {
+      return;
+    }
+
+    window.localStorage.setItem("zonke-card-info", JSON.stringify(cardInfo));
+  }, [cardInfo, hasLoadedStoredData]);
+
+  useEffect(() => {
+    if (!hasLoadedStoredData) {
+      return;
+    }
+
+    window.localStorage.setItem("zonke-custom-stores", JSON.stringify(customStores));
+  }, [customStores, hasLoadedStoredData]);
+
   const toggleStore = (storeId: string) => {
-    const store = stores.find(s => s.id === storeId);
+    if (cardInfo[storeId]) {
+      setSelectedStores(prev =>
+        prev.includes(storeId)
+          ? prev.filter(id => id !== storeId)
+          : [...prev, storeId]
+      );
+      return;
+    }
+
+    const store = allStores.find(s => s.id === storeId);
     setCardModalId(storeId);
     setCardModalOpen(true);
     setTempCardName(cardInfo[storeId]?.name || store?.name || "");
@@ -102,7 +151,9 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
   };
 
   const handleCardModalConfirm = () => {
-    if (!tempCardName.trim() || !tempCardId.trim() || !tempCardNumber.trim()) {
+    const cardName = tempCardName.trim();
+
+    if (!cardName || !tempCardId.trim() || !tempCardNumber.trim()) {
       alert("Please fill in Card Name, ID, and Card Number");
       return;
     }
@@ -110,13 +161,13 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
     if (cardModalId === "new-card") {
       // Generate a new store ID for custom card
       const newStoreId = `custom-${Date.now()}`;
-      const newStore = { id: newStoreId, name: tempCardName, color: "#6366f1" };
-      stores.push(newStore);
+      const newStore = { id: newStoreId, name: cardName, color: "#6366f1" };
+      setCustomStores(prev => [...prev, newStore]);
       
       setSelectedStores(prev => [...prev, newStoreId]);
       setCardInfo(prev => ({
         ...prev,
-        [newStoreId]: { name: tempCardName, id: tempCardId, cardNumber: tempCardNumber }
+        [newStoreId]: { name: cardName, id: tempCardId, cardNumber: tempCardNumber }
       }));
     } else if (cardModalId) {
       setSelectedStores(prev => 
@@ -126,10 +177,11 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
       );
       setCardInfo(prev => ({
         ...prev,
-        [cardModalId]: { name: tempCardName, id: tempCardId, cardNumber: tempCardNumber }
+        [cardModalId]: { name: cardName, id: tempCardId, cardNumber: tempCardNumber }
       }));
     }
 
+    speakCardName(cardName);
     setCardModalOpen(false);
     setCardModalId(null);
     setTempCardName("");
@@ -187,7 +239,7 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            {stores.map((store) => {
+            {allStores.map((store) => {
               const isSelected = selectedStores.includes(store.id);
               const hasCardInfo = cardInfo[store.id];
               return (
@@ -206,11 +258,8 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
                       <Check className="w-4 h-4 text-primary-foreground" />
                     </div>
                   )}
-                  <div 
-                    className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold text-white mx-auto mb-4"
-                    style={{ backgroundColor: store.color }}
-                  >
-                    {store.name.charAt(0)}
+                  <div className="mx-auto mb-4 flex justify-center">
+                    <StoreLogo store={store} />
                   </div>
                   <p className="font-semibold text-center">{store.name}</p>
                   {hasCardInfo && (
@@ -256,16 +305,11 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
 
           <div className="space-y-6 mb-6">
             {selectedStores.map((storeId) => {
-              const store = stores.find(s => s.id === storeId)!;
+              const store = allStores.find(s => s.id === storeId)!;
               return (
                 <div key={storeId} className="bg-card rounded-xl border border-border p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div 
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold text-white"
-                      style={{ backgroundColor: store.color }}
-                    >
-                      {store.name.charAt(0)}
-                    </div>
+                    <StoreLogo store={store} size="sm" />
                     <h3 className="font-semibold">{store.name}</h3>
                   </div>
                   
