@@ -5,29 +5,136 @@ import { Check, Lock, ShieldCheck, ArrowRight, ArrowLeft, Plus, X } from "lucide
 import { cn } from "@/lib/utils";
 
 const stores = [
-  { id: "tfg", name: "TFG", color: "#3b82f6" },
-  { id: "truworths", name: "Truworths", color: "#8b5cf6" },
-  { id: "ackermans", name: "Ackermans", color: "#14b8a6" },
+  { id: "tfg", name: "TFG", color: "#3b82f6", logo: "tfg" },
+  { id: "truworths", name: "Truworths", color: "#8b5cf6", logo: "truworths" },
+  { id: "ackermans", name: "Ackermans", color: "#14b8a6", logo: "ackermans" },
 ];
+
+// Store Logo Components
+const StoreLogo = ({ storeId, size = "lg" }: { storeId: string; size?: "sm" | "lg" }) => {
+  const sizeClass = size === "lg" ? "w-16 h-16" : "w-10 h-10";
+  
+  if (storeId === "tfg") {
+    return (
+      <div className={`${sizeClass} flex items-center justify-center font-bold text-white`}>
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <rect width="100" height="100" fill="#3b82f6" rx="8" />
+          <text x="50" y="65" fontSize="50" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial">
+            TFG
+          </text>
+        </svg>
+      </div>
+    );
+  } else if (storeId === "truworths") {
+    return (
+      <div className={`${sizeClass} flex items-center justify-center font-bold text-white`}>
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <rect width="100" height="100" fill="#8b5cf6" rx="8" />
+          <text x="50" y="60" fontSize="32" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial">
+            TW
+          </text>
+        </svg>
+      </div>
+    );
+  } else if (storeId === "ackermans") {
+    return (
+      <div className={`${sizeClass} flex items-center justify-center font-bold text-white`}>
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <rect width="100" height="100" fill="#14b8a6" rx="8" />
+          <text x="50" y="60" fontSize="32" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial">
+            ACK
+          </text>
+        </svg>
+      </div>
+    );
+  } else {
+    // Custom card logo
+    return (
+      <div className={`${sizeClass} flex items-center justify-center font-bold text-white bg-indigo-500 rounded-lg`}>
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <rect width="100" height="100" fill="#6366f1" rx="8" />
+          <text x="50" y="65" fontSize="40" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial">
+            C
+          </text>
+        </svg>
+      </div>
+    );
+  }
+};
 
 interface Credentials {
   [key: string]: { username: string; password: string };
+}
+
+interface CardInfo {
+  [key: string]: { name: string; id: string; cardNumber: string };
 }
 
 export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(1);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
   const [credentials, setCredentials] = useState<Credentials>({});
+  const [cardInfo, setCardInfo] = useState<CardInfo>({});
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [forgotPasswordId, setForgotPasswordId] = useState("");
+  const [cardModalOpen, setCardModalOpen] = useState(false);
+  const [cardModalId, setCardModalId] = useState<string | null>(null);
+  const [tempCardName, setTempCardName] = useState("");
+  const [tempCardId, setTempCardId] = useState("");
+  const [tempCardNumber, setTempCardNumber] = useState("");
 
   const toggleStore = (storeId: string) => {
-    setSelectedStores(prev => 
-      prev.includes(storeId) 
-        ? prev.filter(id => id !== storeId)
-        : [...prev, storeId]
-    );
+    const store = stores.find(s => s.id === storeId);
+    setCardModalId(storeId);
+    setCardModalOpen(true);
+    setTempCardName(cardInfo[storeId]?.name || store?.name || "");
+    setTempCardId(cardInfo[storeId]?.id || "");
+    setTempCardNumber(cardInfo[storeId]?.cardNumber || "");
+  };
+
+  const handleAddCard = () => {
+    setCardModalId("new-card");
+    setCardModalOpen(true);
+    setTempCardName("");
+    setTempCardId("");
+    setTempCardNumber("");
+  };
+
+  const handleCardModalConfirm = () => {
+    if (!tempCardName.trim() || !tempCardId.trim() || !tempCardNumber.trim()) {
+      alert("Please fill in Card Name, ID, and Card Number");
+      return;
+    }
+
+    if (cardModalId === "new-card") {
+      // Generate a new store ID for custom card
+      const newStoreId = `custom-${Date.now()}`;
+      const newStore = { id: newStoreId, name: tempCardName, color: "#6366f1" };
+      stores.push(newStore);
+      
+      setSelectedStores(prev => [...prev, newStoreId]);
+      setCardInfo(prev => ({
+        ...prev,
+        [newStoreId]: { name: tempCardName, id: tempCardId, cardNumber: tempCardNumber }
+      }));
+    } else if (cardModalId) {
+      setSelectedStores(prev => 
+        prev.includes(cardModalId) 
+          ? prev 
+          : [...prev, cardModalId]
+      );
+      setCardInfo(prev => ({
+        ...prev,
+        [cardModalId]: { name: tempCardName, id: tempCardId, cardNumber: tempCardNumber }
+      }));
+    }
+
+    setCardModalOpen(false);
+    setCardModalId(null);
+    setTempCardName("");
+    setTempCardId("");
+    setTempCardNumber("");
   };
 
   const handleCredentialChange = (storeId: string, field: "username" | "password", value: string) => {
@@ -82,6 +189,7 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             {stores.map((store) => {
               const isSelected = selectedStores.includes(store.id);
+              const hasCardInfo = cardInfo[store.id];
               return (
                 <button
                   key={store.id}
@@ -105,26 +213,14 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
                     {store.name.charAt(0)}
                   </div>
                   <p className="font-semibold text-center">{store.name}</p>
+                  {hasCardInfo && (
+                    <p className="text-xs text-muted-foreground text-center mt-2">Card: ••••{cardInfo[store.id].cardNumber.slice(-4)}</p>
+                  )}
                 </button>
               );
             })}
             <button
-              className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
-            >
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
-                <Plus className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <p className="font-semibold text-center">Add Card</p>
-            </button>
-            <button
-              className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
-            >
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
-                <Plus className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <p className="font-semibold text-center">Add Card</p>
-            </button>
-            <button
+              onClick={handleAddCard}
               className="p-6 rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 transition-all flex flex-col items-center justify-center gap-3"
             >
               <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
@@ -317,6 +413,87 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
                 className="flex-1 py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all"
               >
                 Reset Password
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Card Info Modal */}
+      {cardModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg border border-border p-6 max-w-sm w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">
+                {cardModalId === "new-card" ? "Add New Card" : "Card Information"}
+              </h2>
+              <button
+                onClick={() => {
+                  setCardModalOpen(false);
+                  setCardModalId(null);
+                  setTempCardName("");
+                  setTempCardId("");
+                  setTempCardNumber("");
+                }}
+                className="p-1 hover:bg-muted rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-muted-foreground mb-6">Enter card name, ID, and card number</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">Card Name</label>
+                <input
+                  type="text"
+                  value={tempCardName}
+                  onChange={(e) => setTempCardName(e.target.value)}
+                  placeholder="e.g., TFG, Truworths, Ackermans"
+                  className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">ID Number</label>
+                <input
+                  type="text"
+                  value={tempCardId}
+                  onChange={(e) => setTempCardId(e.target.value)}
+                  placeholder="Enter your ID number"
+                  className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">Card Number</label>
+                <input
+                  type="text"
+                  value={tempCardNumber}
+                  onChange={(e) => setTempCardNumber(e.target.value)}
+                  placeholder="Enter your card number"
+                  className="w-full px-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setCardModalOpen(false);
+                  setCardModalId(null);
+                  setTempCardName("");
+                  setTempCardId("");
+                  setTempCardNumber("");
+                }}
+                className="flex-1 py-2.5 px-4 rounded-lg font-medium border border-border hover:bg-muted transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCardModalConfirm}
+                className="flex-1 py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all"
+              >
+                Confirm
               </button>
             </div>
           </div>
