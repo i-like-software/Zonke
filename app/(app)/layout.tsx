@@ -1,27 +1,12 @@
-"use client";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { AppShell } from "@/components/zonke/app-shell";
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
-import { Sidebar } from "@/components/zonke/sidebar";
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  if (!cookieStore.has("zonke_auth")) {
+    redirect("/login");
+  }
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Close mobile menu whenever the route changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Sidebar
-        isMobileOpen={isMobileMenuOpen}
-        onMobileToggle={() => setIsMobileMenuOpen((prev) => !prev)}
-      />
-      <main className="md:ml-60 pt-20 md:pt-0 pb-20 md:pb-0">
-        <div className="p-6 md:p-8">{children}</div>
-      </main>
-    </div>
-  );
+  return <AppShell>{children}</AppShell>;
 }
