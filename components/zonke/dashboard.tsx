@@ -595,10 +595,6 @@ export function Dashboard({
               <span className="text-sm font-semibold" style={{ color: "oklch(0.50 0.10 75)" }}>
                 Financial Autopilot
               </span>
-              <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold"
-                style={{ background: "oklch(0.66 0.13 75 / 0.15)", color: "oklch(0.50 0.10 75)" }}>
-                AI
-              </span>
             </div>
             <p className="text-xs leading-relaxed" style={{ color: "oklch(0.55 0.08 75)" }}>
               Get a personalised payment plan or stress-mode advice for tough months.
