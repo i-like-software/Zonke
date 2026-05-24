@@ -17,7 +17,7 @@ import { MONTHLY_SPENDING, TOTAL_CREDIT_LIMIT, TOTAL_DEBT } from "@/lib/mock-dat
 import { cn } from "@/lib/utils";
 
 function formatCurrency(amount: number) {
-  return `R${amount.toLocaleString("en-ZA")}`;
+  return `R${Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 }
 
 export function Insights() {

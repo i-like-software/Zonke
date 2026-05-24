@@ -16,7 +16,7 @@ import { ACCOUNTS, TOTAL_DEBT, STORE_COLORS } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 function formatCurrency(amount: number) {
-  return `R${amount.toLocaleString("en-ZA")}`;
+  return `R${Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 }
 
 export function Dashboard() {
