@@ -1,4 +1,4 @@
-"use client";
+import { redirect } from 'next/navigation';
 
 import { useState } from "react";
 import { Sidebar, type Tab } from "@/components/zonke/sidebar";
@@ -93,4 +93,7 @@ export default function Page() {
       </main>
     </div>
   );
+}
+export default function Home() {
+  redirect('/dashboard');
 }

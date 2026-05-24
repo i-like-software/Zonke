@@ -1,58 +1,54 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Link2,
   Bell,
   TrendingUp,
-  Zap,
-  User,
   Menu,
   X,
-  AlertTriangle,
+  Settings,
+  LogOut,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { ACCOUNTS, USER_PROFILE } from "@/lab/mock-data";
 
-export type Tab = "dashboard" | "link-accounts" | "insights" | "autopilot";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
-  activeTab: Tab;
-  onTabChange: (tab: Tab) => void;
   isMobileOpen: boolean;
   onMobileToggle: () => void;
 }
 
 const navItems = [
-  { id: "dashboard" as Tab,      label: "Dashboard",           icon: LayoutDashboard },
-  { id: "link-accounts" as Tab,  label: "Link Accounts",       icon: Link2 },
-  { id: "insights" as Tab,       label: "Insights",            icon: TrendingUp },
-  { id: "autopilot" as Tab,      label: "Financial Autopilot", icon: Zap },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/link-accounts", label: "Link Accounts", icon: Link2 },
+  { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/insights", label: "Insights", icon: TrendingUp },
 ];
 
-function fmt(n: number) {
-  return `R${n.toLocaleString("en-ZA")}`;
-}
+export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
 
-export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }: SidebarProps) {
-  const handleNavClick = (tab: Tab) => {
-    onTabChange(tab);
-    if (isMobileOpen) onMobileToggle();
+  const handleLogout = () => {
+    document.cookie = "zonke_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    router.push("/login");
   };
 
-  // Derived from mock data
-  const totalDebt    = ACCOUNTS.reduce((s, a) => s + a.balance, 0);
-  const overdueCount = ACCOUNTS.filter(a => a.status === "overdue").length;
-  const unpaidCount  = ACCOUNTS.filter(a => a.status === "unpaid").length;
-  const initials     = USER_PROFILE.name.slice(0, 2).toUpperCase();
+  const navLinkClass = (href: string) =>
+    cn(
+      "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+      pathname === href
+        ? "bg-sidebar-accent text-primary border-l-2 border-primary"
+        : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
+    );
 
   return (
     <>
       {/* ── Mobile top header ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-sidebar border-b border-sidebar-border z-50 flex items-center justify-between px-4">
-        <span className="text-xl font-bold font-[var(--font-heading)]" style={{ color: "oklch(0.70 0.13 75)" }}>
-          Zonke
-        </span>
+        <span className="text-2xl font-extrabold text-primary font-[var(--font-heading)]">Zonke</span>
         <button
           onClick={onMobileToggle}
           className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground"
@@ -64,24 +60,23 @@ export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }
 
       {/* ── Mobile overlay ── */}
       {isMobileOpen && (
-        <div className="md:hidden fixed inset-0 bg-black/60 z-40" onClick={onMobileToggle} />
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={onMobileToggle}
+        />
       )}
 
-      {/* ── Sidebar panel ── */}
+      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-full w-60 bg-sidebar border-r border-sidebar-border z-50",
-          "flex flex-col transition-transform duration-300 ease-in-out",
+          "fixed left-0 top-0 h-full w-60 bg-sidebar border-r border-sidebar-border z-50 flex flex-col transition-transform duration-300",
           "md:translate-x-0",
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* ── Logo ── */}
-        <div className="h-16 flex items-center px-6 border-b border-sidebar-border shrink-0">
-          <span
-            className="text-2xl font-bold font-[var(--font-heading)] tracking-tight"
-            style={{ color: "oklch(0.70 0.13 75)" }}
-          >
+        {/* Logo */}
+        <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
+          <span className="text-3xl font-extrabold text-primary font-[var(--font-heading)] tracking-tight">
             Zonke
           </span>
         </div>
@@ -110,56 +105,28 @@ export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }
         <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto mt-1">
           {navItems.map(item => {
             const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            const isAutopilot = item.id === "autopilot";
             return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium nav-item",
-                  isActive
-                    ? "text-sidebar-primary-foreground nav-item-active"
-                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/60"
-                )}
-                style={isActive ? {
-                  background: "oklch(0.62 0.13 75)",
-                  boxShadow: "0 2px 8px oklch(0.62 0.13 75 / 0.35)",
-                } : {}}
-              >
-                <Icon className={cn(
-                  "w-4 h-4 shrink-0",
-                  isActive ? "text-white" : isAutopilot ? "text-sidebar-foreground/70" : ""
-                )} />
-                <span className={isActive ? "text-white font-semibold" : ""}>{item.label}</span>
-                {/* AI pill on autopilot */}
-              </button>
+              <Link key={item.href} href={item.href} className={navLinkClass(item.href)}>
+                <Icon className={cn("w-5 h-5", pathname === item.href && "text-primary")} />
+                {item.label}
+              </Link>
             );
           })}
         </nav>
 
-        {/* ── User profile ── */}
-        <div className="p-3 border-t border-sidebar-border shrink-0">
-          <div className="flex items-center gap-3 px-2 py-1">
-            {/* Avatar with initials */}
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
-              style={{
-                background: "linear-gradient(135deg, oklch(0.62 0.13 75), oklch(0.55 0.16 55))",
-                color: "#fff",
-              }}
-            >
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-sidebar-foreground truncate">
-                {USER_PROFILE.name}
-              </p>
-              <p className="text-[10px] text-sidebar-foreground/50 truncate">
-                Income: {fmt(USER_PROFILE.monthlyIncome)}/mo
-              </p>
-            </div>
-          </div>
+        {/* Bottom Actions */}
+        <div className="px-3 pb-6 border-t border-sidebar-border pt-4 space-y-1">
+          <Link href="/settings" className={navLinkClass("/settings")}>
+            <Settings className={cn("w-5 h-5", pathname === "/settings" && "text-primary")} />
+            Settings
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+          >
+            <LogOut className="w-5 h-5" />
+            Account Logout
+          </button>
         </div>
       </aside>
 
@@ -167,26 +134,33 @@ export function Sidebar({ activeTab, onTabChange, isMobileOpen, onMobileToggle }
       <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-sidebar border-t border-sidebar-border z-50 flex items-center justify-around px-1">
         {navItems.map(item => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = pathname === item.href;
           return (
-            <button
-              key={item.id}
-              onClick={() => handleNavClick(item.id)}
-              className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors min-w-0 relative"
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors flex-1 min-w-0",
+                isActive 
+                  ? "text-primary" 
+                  : "text-muted-foreground"
+              )}
             >
-              <Icon
-                className="w-5 h-5 shrink-0"
-                style={{ color: isActive ? "oklch(0.70 0.13 75)" : "oklch(0.60 0.01 265)" }}
-              />
-              <span
-                className="text-[9px] font-medium truncate max-w-[52px] text-center leading-tight"
-                style={{ color: isActive ? "oklch(0.70 0.13 75)" : "oklch(0.60 0.01 265)" }}
-              >
-                {item.label.split(" ")[0]}
-              </span>
-            </button>
+              <Icon className="w-5 h-5" />
+              <span className="text-[9px] font-medium text-center truncate max-w-full px-1">{item.label}</span>
+            </Link>
           );
         })}
+        <Link
+          href="/settings"
+          className={cn(
+            "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
+            pathname === "/settings" ? "text-primary" : "text-muted-foreground"
+          )}
+        >
+          <Settings className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Settings</span>
+        </Link>
       </div>
     </>
   );
