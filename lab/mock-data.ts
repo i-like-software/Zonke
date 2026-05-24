@@ -30,7 +30,7 @@ export const ACCOUNTS: Account[] = [
     status: "overdue",
     interestRate: 31.2,
     lastPayment: "22 Mar",
-    storeUrl: "https://account.truworths.co.za",
+    storeUrl: "https://truworths.co.za",
   },
   {
     id: "4",
@@ -42,19 +42,7 @@ export const ACCOUNTS: Account[] = [
     status: "unpaid",
     interestRate: 24.5,
     lastPayment: "1 May",
-    storeUrl: "https://www.ackemans.co.za/account",
-  },
-  {
-    id: "5",
-    store: "Foschini",
-    balance: 2300,
-    limit: 3500,
-    minDue: 0,
-    dueDate: "15 Apr",
-    status: "paid",
-    interestRate: 26.8,
-    lastPayment: "15 Apr",
-    storeUrl: "https://www.tfgfinancialservices.co.za",
+    storeUrl: "https://www.ackermans.co.za/",
   },
 ];
 

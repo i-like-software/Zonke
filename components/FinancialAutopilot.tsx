@@ -81,10 +81,10 @@ function runPlannedEngine(budget: number): {
   allocs.forEach(a => {
     const monthlyRate = a.account.interestRate / 100 / 12;
     if (a.account.status === "overdue") {
-      a.reason = "Overdue — paying extra to clear penalty risk";
+      a.reason = "Overdue, paying extra to clear penalty risk";
       a.isMinOnly = a.payment === a.account.minDue;
     } else if (!a.isMinOnly || a.payment > a.account.minDue) {
-      a.reason = `Highest interest at ${a.account.interestRate}% — avalanche priority`;
+      a.reason = `Highest interest at ${a.account.interestRate}% avalanche priority`;
       a.isMinOnly = false;
     } else {
       a.reason = "Minimum payment to keep account in good standing";
@@ -173,7 +173,7 @@ function runStressEngine(budget: number): {
         account: a,
         action: "skip",
         amount: 0,
-        reason: `Skip this month — budget exhausted. Call ${a.store} to request a payment arrangement.`,
+        reason: `Skip this month, budget exhausted. Call ${a.store} to request a payment arrangement.`,
         priority: priority++,
       });
       continue;
@@ -187,8 +187,8 @@ function runStressEngine(budget: number): {
         action: "pay-overdue",
         amount: pay,
         reason: pay >= a.minDue
-          ? "Overdue — paying minimum immediately to stop penalty fees"
-          : `Overdue — partial payment of ${fmt(pay)} to show good faith. Call them to arrange the rest.`,
+          ? "Overdue, paying minimum immediately to stop penalty fees"
+          : `Overdue, partial payment of ${fmt(pay)} to show good faith. Call them to arrange the rest.`,
         priority: priority++,
       });
     } else if (remaining >= a.minDue) {
@@ -198,7 +198,7 @@ function runStressEngine(budget: number): {
         action: "pay-full-min",
         amount: a.minDue,
         reason: days <= 3
-          ? `Due in ${days} days — paying minimum to avoid a late fee`
+          ? `Due in ${days} days, paying minimum to avoid a late fee`
           : `Paying minimum to keep account in good standing`,
         priority: priority++,
       });
@@ -209,7 +209,7 @@ function runStressEngine(budget: number): {
         account: a,
         action: "pay-partial",
         amount: pay,
-        reason: `Due soon — partial payment of ${fmt(pay)}. Call ${a.store} for a short extension on the rest.`,
+        reason: `Due soon,  partial payment of ${fmt(pay)}. Call ${a.store} for a short extension on the rest.`,
         priority: priority++,
       });
     } else {
@@ -217,7 +217,7 @@ function runStressEngine(budget: number): {
         account: a,
         action: "skip",
         amount: 0,
-        reason: `Skip this month — due date is ${a.dueDate} and you have no budget left. Call ${a.store} to request a payment arrangement.`,
+        reason: `Skip this month, due date is ${a.dueDate} and you have no budget left. Call ${a.store} to request a payment arrangement.`,
         priority: priority++,
       });
     }
@@ -228,10 +228,10 @@ function runStressEngine(budget: number): {
   const canCoverAll = budget >= totalMin;
 
   const tips = [
-    "SA retail stores are generally understanding — a quick call can get you a 7-14 day extension.",
+    "SA retail stores are generally understanding, a quick call can get you a 7-14 day extension.",
     "Paying something is always better than paying nothing. Even a partial payment shows good faith.",
     "Next month, try to build a R500 buffer so stress months don't snowball.",
-    "Most SA retailers report to credit bureaus monthly — acting now protects your credit score.",
+    "Most SA retailers report to credit bureaus monthly, acting now protects your credit score.",
   ];
   const tip = tips[Math.floor(Math.random() * tips.length)];
 
@@ -453,7 +453,7 @@ function StressResults({ budget, onBack }: { budget: number; onBack: () => void 
   }, []);
 
   const summaryText = result.canCoverAll
-    ? `Good news — ${fmt(budget)} covers all your minimum payments. Here's the smartest order to pay them.`
+    ? `Good news, ${fmt(budget)} covers all your minimum payments. Here's the smartest order to pay them.`
     : `${fmt(budget)} doesn't cover all minimums (you're ${fmt(result.shortfall)} short). Here's how to minimise the damage this month.`;
 
   const { displayed } = useTypewriter(summaryText, 10, show);
@@ -513,7 +513,7 @@ function StressResults({ budget, onBack }: { budget: number; onBack: () => void 
           {/* Advice cards */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-5 py-3.5 border-b border-slate-100">
-              <h3 className="text-sm font-semibold text-slate-900">What to do — in order</h3>
+              <h3 className="text-sm font-semibold text-slate-900">What to do, in order</h3>
             </div>
             <div className="divide-y divide-slate-50">
               {result.advice.map((item, i) => {
@@ -584,7 +584,7 @@ function StressResults({ budget, onBack }: { budget: number; onBack: () => void 
   );
 }
 
-// ── STRESS BUDGET INPUT ───────────────────────────────────────────────
+//STRESS BUDGET INPUT
 function StressBudgetInput({ onSubmit, onBack }: { onSubmit: (b: number) => void; onBack: () => void }) {
   const [budget, setBudget] = useState("");
   const totalMin = ACCOUNTS.filter(a => a.status !== "paid").reduce((s, a) => s + a.minDue, 0);
@@ -670,7 +670,7 @@ function StressBudgetInput({ onSubmit, onBack }: { onSubmit: (b: number) => void
   );
 }
 
-// ── MODE SELECT ───────────────────────────────────────────────────────
+//MODE SELECT
 function ModeSelect({ onSelect }: { onSelect: (m: "planned" | "stress") => void }) {
   const unpaid = ACCOUNTS.filter(a => a.status !== "paid");
   const totalDue = unpaid.reduce((s, a) => s + a.minDue, 0);

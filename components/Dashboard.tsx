@@ -14,7 +14,7 @@ import {
   Account, ACCOUNTS as DEFAULT_ACCOUNTS, STORE_COLORS, USER_PROFILE,
 } from "@/lab/mock-data";
 
-// ─── helpers ────────────────────────────────────────────────────────
+//helpers
 function fmt(n: number) {
   return `R${n.toLocaleString("en-ZA")}`;
 }

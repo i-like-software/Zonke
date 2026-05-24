@@ -59,14 +59,6 @@ export default function Page() {
             description="Connect your Edgars, Woolworths, Truworths and other store accounts so Zonke can track them automatically."
           />
         );
-      case "notifications":
-        return (
-          <PlaceholderPage
-            title="Notifications"
-            icon={Bell}
-            description="Payment reminders and due date alerts — all in one place instead of scattered SMS and WhatsApp messages."
-          />
-        );
       case "insights":
         return (
           <PlaceholderPage
