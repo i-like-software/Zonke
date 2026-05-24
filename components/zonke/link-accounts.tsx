@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Check, Lock, ShieldCheck, ArrowRight, ArrowLeft, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -392,7 +394,7 @@ export function LinkAccounts({ onComplete }: { onComplete: () => void }) {
           </p>
 
           <button
-            onClick={onComplete}
+            onClick={() => router.push('/dashboard')}
             className="w-full py-3 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
           >
             Go to Dashboard
